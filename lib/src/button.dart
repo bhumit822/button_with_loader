@@ -3,13 +3,13 @@ import 'package:button_with_loader/src/extension.dart';
 import 'package:button_with_loader/src/typedefs.dart';
 import 'package:flutter/material.dart';
 
-class _ButtonWithLoader extends StatefulWidget {
-  _ButtonWithLoader({
+class ButtonWithLoaderBase extends StatelessWidget {
+  ButtonWithLoaderBase({
     super.key,
     required this.onTap,
     this.durationforDoneSign,
     this.showDone = true,
-    this.label,
+    this.label = "Button",
     this.color,
     this.padding = const EdgeInsets.all(10),
     this.decoration,
@@ -26,43 +26,43 @@ class _ButtonWithLoader extends StatefulWidget {
           'Cannot provide both a color and a decoration\n'
           'To provide both, use "decoration: BoxDecoration(color: color)".',
         );
-  OnTapCallback? onTap;
-  OnDoneCallback? onDone;
-  OnErrorCallback? onError;
-  OnLoadingCallback? onLoading;
-  int? durationforDoneSign;
-  bool? showDone;
-  String? label = "Button";
-  Color? color;
-  bool? autoToIdeal;
-  ButtonBuilder? builder;
-  Widget? loadingIndicatorWidget;
-  Widget? errorIndicatorWidget;
-  Widget? doneIndicatorWidget;
-  Widget? idealIndicatorWidget;
-  BoxDecoration? decoration;
-  EdgeInsetsGeometry? padding = const EdgeInsets.all(10);
-  @override
-  State<_ButtonWithLoader> createState() => _ButtonWithLoaderState();
-}
+  final OnTapCallback? onTap;
+  final OnDoneCallback? onDone;
+  final OnErrorCallback? onError;
+  final OnLoadingCallback? onLoading;
+  final int? durationforDoneSign;
+  final bool? showDone;
+  final String? label;
+  final Color? color;
+  final bool? autoToIdeal;
+  final Widget? loadingIndicatorWidget;
+  final Widget? errorIndicatorWidget;
+  final Widget? doneIndicatorWidget;
+  final Widget? idealIndicatorWidget;
+  final BoxDecoration? decoration;
 
-class _ButtonWithLoaderState extends State<_ButtonWithLoader> {
-  ValueNotifier<ButtonState> buttonState = ValueNotifier(ButtonState.ideal);
+  final EdgeInsetsGeometry? padding;
+
+  final ValueNotifier<ButtonState> buttonState =
+      ValueNotifier(ButtonState.ideal);
+  final BuilderShell builder = BuilderShell();
   Widget get loadingWidget =>
-      widget.loadingIndicatorWidget ??
+      loadingIndicatorWidget ??
       const SizedBox(
         width: 15,
         height: 15,
         child: CircularProgressIndicator(strokeWidth: 4),
       );
+
   Widget get idealWidget =>
-      widget.idealIndicatorWidget ??
+      idealIndicatorWidget ??
       const SizedBox(
         width: 15,
         height: 15,
       );
+
   Widget get doneWidget =>
-      widget.doneIndicatorWidget ??
+      doneIndicatorWidget ??
       const SizedBox(
         width: 15,
         height: 15,
@@ -75,8 +75,9 @@ class _ButtonWithLoaderState extends State<_ButtonWithLoader> {
           ),
         ),
       );
+
   Widget get errorWidget =>
-      widget.errorIndicatorWidget ??
+      errorIndicatorWidget ??
       const SizedBox(
         width: 15,
         height: 15,
@@ -97,28 +98,28 @@ class _ButtonWithLoaderState extends State<_ButtonWithLoader> {
         if (buttonState.value != ButtonState.loading) {
           try {
             buttonState.value = ButtonState.loading;
-            widget.onLoading?.call();
+            onLoading?.call();
 
-            await widget.onTap?.call();
-            if (widget.showDone == true) {
+            await onTap?.call();
+            if (showDone == true) {
               buttonState.value = ButtonState.done;
-              widget.onDone?.call();
-              if (widget.autoToIdeal == true) {
+              onDone?.call();
+              if (autoToIdeal == true) {
                 await Future.delayed(
-                    Duration(seconds: widget.durationforDoneSign ?? 3), () {
+                    Duration(seconds: durationforDoneSign ?? 3), () {
                   buttonState.value = ButtonState.ideal;
                 });
               }
             } else {
               buttonState.value = ButtonState.ideal;
-              widget.onDone?.call();
+              onDone?.call();
             }
           } catch (e, st) {
             buttonState.value = ButtonState.error;
-            widget.onError?.call(e, st);
-            if (widget.autoToIdeal == true) {
-              await Future.delayed(
-                  Duration(seconds: widget.durationforDoneSign ?? 3), () {
+            onError?.call(e, st);
+            if (autoToIdeal == true) {
+              await Future.delayed(Duration(seconds: durationforDoneSign ?? 3),
+                  () {
                 buttonState.value = ButtonState.ideal;
               });
             }
@@ -128,12 +129,12 @@ class _ButtonWithLoaderState extends State<_ButtonWithLoader> {
       child: ValueListenableBuilder(
         valueListenable: buttonState,
         builder: (context, state, child) {
-          return widget.builder != null
-              ? widget.builder!.call(context, state)
+          return builder.builder != null
+              ? builder.builder!.call(context, state)
               : Container(
-                  color: widget.color,
-                  decoration: widget.decoration,
-                  padding: widget.padding,
+                  color: color,
+                  decoration: decoration,
+                  padding: padding,
                   child: IntrinsicHeight(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -143,7 +144,7 @@ class _ButtonWithLoaderState extends State<_ButtonWithLoader> {
                           height: 15,
                         ),
                         5.wSpace,
-                        Text(widget.label ?? "Button"),
+                        Text(label ?? "Button"),
                         5.wSpace,
                         buildLoader(state),
                       ],
@@ -172,7 +173,7 @@ class _ButtonWithLoaderState extends State<_ButtonWithLoader> {
   }
 }
 
-class ButtonWithLoader extends _ButtonWithLoader {
+class ButtonWithLoader extends ButtonWithLoaderBase {
   ButtonWithLoader({
     super.key,
     required super.onTap,
@@ -200,8 +201,12 @@ class ButtonWithLoader extends _ButtonWithLoader {
     super.onError,
     super.showDone = true,
     super.onLoading,
-    required ButtonBuilder builder,
+    required builder,
   }) {
-    super.builder = builder;
+    super.builder.builder = builder;
   }
+}
+
+class BuilderShell {
+  ButtonBuilder? builder;
 }
