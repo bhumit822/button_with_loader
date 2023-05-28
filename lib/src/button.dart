@@ -201,7 +201,7 @@ class ButtonWithLoader extends ButtonWithLoaderBase {
     super.onError,
     super.showDone = true,
     super.onLoading,
-    required builder,
+    required Widget Function(BuildContext, ButtonState) builder,
   }) {
     super.builder.builder = builder;
   }
